@@ -116,6 +116,7 @@
       transition: all 0.4s;
       min-width: 140px;
       box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+      position: relative;
     }
 
     .yes {
@@ -123,6 +124,7 @@
       color: white;
       animation: pulse 2s infinite;
       border: 2px solid rgba(255, 255, 255, 0.7);
+      z-index: 10;
     }
 
     .yes:hover {
@@ -133,9 +135,9 @@
     .no {
       background: linear-gradient(135deg, #c0c0c0, #e0e0e0);
       color: #888;
-      position: relative;
       border: 2px solid rgba(255, 255, 255, 0.7);
-      transition: left 0.1s, top 0.1s;
+      transition: all 0.3s ease;
+      z-index: 10;
     }
 
     .no:hover {
@@ -183,6 +185,7 @@
       box-shadow: 0 10px 25px rgba(255, 105, 180, 0.2);
       margin-top: 20px;
       border: 4px solid white;
+      background: #000;
     }
 
     .flower {
@@ -220,6 +223,22 @@
       font-style: italic;
     }
     
+    .video-placeholder {
+      width: 100%;
+      max-width: 500px;
+      height: 280px;
+      border-radius: 20px;
+      background: linear-gradient(45deg, #ff6b8b, #ff99ac);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+      margin-top: 20px;
+      border: 4px solid white;
+      box-shadow: 0 10px 25px rgba(255, 105, 180, 0.2);
+    }
+    
     /* Mobile adjustments */
     @media (max-width: 480px) {
       .card, .success {
@@ -245,8 +264,9 @@
         gap: 15px;
       }
       
-      video {
+      video, .video-placeholder {
         max-width: 100%;
+        height: 200px;
       }
       
       .flower {
@@ -274,7 +294,6 @@
       h.style.opacity = 0.3 + Math.random() * 0.6;
       document.body.appendChild(h);
       
-      // Add some different heart styles
       if (i % 3 === 0) h.innerText = "💗";
       if (i % 5 === 0) h.innerText = "💓";
       if (i % 7 === 0) h.innerText = "💞";
@@ -298,11 +317,11 @@
 
     <div class="buttons">
       <button class="yes" onclick="acceptLove()">YES! 💝</button>
-      <button class="no" id="noBtn">No</button>
+      <button class="no" id="noBtn" onmouseenter="moveNo()" onclick="handleNoClick()">No</button>
     </div>
     
     <p class="hint">
-      (The "No" button might be shy... but your heart knows the right answer 💕)
+      (The "No" button is a bit shy... follow your heart! 💕)
     </p>
   </div>
 
@@ -318,11 +337,17 @@
       Our love story is my favorite adventure.
     </p>
     
-    <!-- Romantic Video -->
-    <video controls autoplay loop muted playsinline>
-      <source src="https://assets.mixkit.co/videos/preview/mixkit-romantic-heart-1187-large.mp4" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
+    <!-- Romantic Video with Fallback -->
+    <div class="video-container">
+      <video id="loveVideo" controls autoplay loop muted playsinline>
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-hearts-floating-in-a-romantic-background-39831-large.mp4" type="video/mp4">
+        <source src="https://cdn.pixabay.com/video/2023/02/28/160456-798229141_tiny.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="video-placeholder" id="videoFallback" style="display: none;">
+        <div>💖 Love is in the air! 💖</div>
+      </div>
+    </div>
     
     <div class="signature">Forever Yours 💖</div>
   </div>
@@ -332,6 +357,15 @@
     const card = document.getElementById("card");
     const success = document.getElementById("success");
     const loveText = document.getElementById("loveText");
+    const loveVideo = document.getElementById("loveVideo");
+    const videoFallback = document.getElementById("videoFallback");
+    
+    // Check if video loads properly
+    loveVideo.addEventListener('error', function() {
+      console.log("Video failed to load, showing fallback");
+      loveVideo.style.display = 'none';
+      videoFallback.style.display = 'flex';
+    });
     
     // Track click attempts on "No" button
     let noClicks = 0;
@@ -343,38 +377,78 @@
       "Just give it a chance? 💖",
       "Try the other button! 😉",
       "You know you want to say YES!",
-      "Your heart says YES! 💕"
+      "Your heart says YES! 💕",
+      "Okay, I'll stop moving... maybe? 😊"
     ];
-
+    
+    // Store original button position
+    const originalBtnStyle = {
+      position: noBtn.style.position,
+      left: noBtn.style.left,
+      top: noBtn.style.top,
+      transform: noBtn.style.transform
+    };
+    
+    // Clever movement - stays within viewport
     function moveNo() {
-      // Move the button to a random position
-      noBtn.style.position = "fixed";
-      noBtn.style.left = Math.random() * (window.innerWidth - 150) + "px";
-      noBtn.style.top = Math.random() * (window.innerHeight - 80) + "px";
-      
-      // Change the text after a few clicks
-      noClicks++;
-      if (noClicks > 2 && noClicks <= noMessages.length + 2) {
-        noBtn.textContent = noMessages[noClicks - 3];
+      // Only move if not too many clicks
+      if (noClicks >= 8) {
+        noBtn.style.transform = "scale(1)";
+        noBtn.style.position = "relative";
+        noBtn.textContent = "Okay, I give up! 😊";
+        return;
       }
       
-      // Make it a bit smaller for fun
-      noBtn.style.transform = `scale(${0.85 + Math.random() * 0.2})`;
+      // Calculate safe boundaries
+      const buttonRect = noBtn.getBoundingClientRect();
+      const maxLeft = window.innerWidth - buttonRect.width - 20;
+      const maxTop = window.innerHeight - buttonRect.height - 20;
+      
+      // Calculate new position (within safe bounds)
+      let newLeft = Math.random() * maxLeft;
+      let newTop = Math.random() * maxTop;
+      
+      // Ensure it doesn't go off screen
+      newLeft = Math.max(20, Math.min(newLeft, maxLeft));
+      newTop = Math.max(20, Math.min(newTop, maxTop));
+      
+      // Apply new position with smooth transition
+      noBtn.style.transition = "all 0.5s ease";
+      noBtn.style.position = "fixed";
+      noBtn.style.left = newLeft + "px";
+      noBtn.style.top = newTop + "px";
+      
+      // Random rotation for fun
+      const rotation = (Math.random() * 30) - 15; // -15 to 15 degrees
+      noBtn.style.transform = `scale(${0.9 + Math.random() * 0.2}) rotate(${rotation}deg)`;
+      
+      // Change text after 2nd attempt
+      noClicks++;
+      if (noClicks > 1 && noClicks <= noMessages.length + 1) {
+        noBtn.textContent = noMessages[noClicks - 2];
+      }
+      
+      // Reset position after 1 second (clever!)
+      setTimeout(() => {
+        noBtn.style.transition = "all 1s ease";
+        noBtn.style.position = "relative";
+        noBtn.style.left = "";
+        noBtn.style.top = "";
+        noBtn.style.transform = "scale(1) rotate(0deg)";
+      }, 1000);
     }
-
-    noBtn.addEventListener("mouseenter", moveNo);
-    noBtn.addEventListener("touchstart", moveNo);
-    noBtn.addEventListener("click", function() {
+    
+    function handleNoClick() {
       moveNo();
-      // Add a little bounce animation
-      noBtn.style.transform = "scale(0.9)";
+      // Add click effect
+      noBtn.style.transform = "scale(0.95)";
       setTimeout(() => {
         noBtn.style.transform = "scale(1)";
-      }, 100);
-    });
+      }, 150);
+    }
 
     function acceptLove() {
-      // Add celebration effect
+      // Celebration effect
       for (let i = 0; i < 30; i++) {
         setTimeout(() => {
           const h = document.createElement("div");
@@ -386,14 +460,13 @@
           h.style.opacity = 0.7;
           document.body.appendChild(h);
           
-          // Remove after animation
           setTimeout(() => {
             if (h.parentNode) h.parentNode.removeChild(h);
           }, 2000);
         }, i * 40);
       }
       
-      // Switch to success page with fade effect
+      // Switch to success page
       card.style.opacity = "0";
       card.style.transform = "scale(0.9)";
       card.style.transition = "all 0.6s";
@@ -404,22 +477,28 @@
         success.style.opacity = "0";
         success.style.transform = "scale(0.9)";
         
-        // Fade in the success page
         setTimeout(() => {
           success.style.opacity = "1";
           success.style.transform = "scale(1)";
           success.style.transition = "all 0.6s";
+          
+          // Try to play video
+          loveVideo.play().catch(e => {
+            console.log("Auto-play blocked, showing fallback");
+            loveVideo.style.display = 'none';
+            videoFallback.style.display = 'flex';
+          });
         }, 50);
       }, 600);
 
-      // Typing animation for the love message
+      // Love message
       const message =
-        "My heart is overflowing with happiness! 💖\n\n" +
+        "My heart is overflowing with joy! 💖\n\n" +
         "You've just made this the most beautiful day. " +
         "Every sunrise will be more golden, " +
         "every star will shine brighter.\n\n" +
-        "I promise to cherish you, to laugh with you, " +
-        "and to love you more each day. 🌹";
+        "I promise to cherish every moment with you, " +
+        "to laugh with you, and to love you more each day. 🌹";
 
       let i = 0;
       loveText.innerHTML = "";
@@ -433,6 +512,14 @@
         if (i >= message.length) clearInterval(typing);
       }, 40);
     }
+    
+    // Reset button on window resize
+    window.addEventListener('resize', () => {
+      noBtn.style.position = "relative";
+      noBtn.style.left = "";
+      noBtn.style.top = "";
+      noBtn.style.transform = "scale(1) rotate(0deg)";
+    });
   </script>
 
 </body>
