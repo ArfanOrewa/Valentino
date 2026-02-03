@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Be My Valentine 💖</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      font-family: "Segoe UI", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #ffd1ff, #ffc3a0);
+      background-size: 400% 400%;
+      animation: gradientBG 12s ease infinite;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 100%; }
+    }
+
+    @keyframes floatUp {
+      from { transform: translateY(100vh); opacity: 0; }
+      to { transform: translateY(-300px); opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0%,100% { transform: scale(1); }
+      50% { transform: scale(1.07); }
+    }
+
+    @keyframes glow {
+      from { box-shadow: 0 0 20px rgba(255,105,180,.4); }
+      to { box-shadow: 0 0 40px rgba(255,105,180,.8); }
+    }
+
+    .heart {
+      position: absolute;
+      font-size: 1.5rem;
+      animation: floatUp 8s infinite linear;
+      pointer-events: none;
+    }
+
+    /* ---------- CARD ---------- */
+    .card {
+      background: rgba(255,255,255,0.25);
+      backdrop-filter: blur(16px);
+      padding: 60px;
+      border-radius: 40px;
+      text-align: center;
+      color: #ff8787;
+      max-width: 520px;
+      animation: glow 3s infinite alternate;
+      z-index: 2;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      margin-bottom: 40px;
+      font-style: italic;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 25px;
+      justify-content: center;
+      position: relative;
+    }
+
+    button {
+      padding: 16px 45px;
+      border-radius: 50px;
+      border: none;
+      font-size: 1.4rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.5s;
+    }
+
+    .yes {
+      background: linear-gradient(135deg, #ff4d6d, #ff85a2);
+      color: white;
+      animation: pulse 2s infinite;
+    }
+
+    .yes:hover {
+      transform: scale(1.0);
+    }
+
+    .no {
+      background: #888;
+      color: white;
+      position: relative;
+    }
+
+    /* ---------- SUCCESS PAGE ---------- */
+    .success {
+      display: none;
+      background: rgba(255,255,255,0.25);
+      backdrop-filter: blur(16px);
+      padding: 60px;
+      border-radius: 40px;
+      text-align: center;
+      color: #ff7c7c;
+      max-width: 900px;
+      animation: glow 3s infinite alternate;
+      z-index: 2;
+    }
+
+    .success h2 {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+    }
+
+    .success p {
+      font-size: 1.4rem;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      font-style: italic;
+    }
+
+    video {
+      width: 80%;
+      border-radius: 25px;
+      box-shadow: 0 0 30px rgba(255,105,180,0.8);
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Hearts -->
+  <script>
+    for (let i = 0; i < 25; i++) {
+      const h = document.createElement("div");
+      h.className = "heart";
+      h.innerText = "❤️";
+      h.style.left = Math.random() * 100 + "vw";
+      h.style.animationDuration = 6 + Math.random() * 6 + "s";
+      document.body.appendChild(h);
+    }
+  </script>
+
+  <!-- FIRST PAGE -->
+  <div class="card" id="card">
+    <h1>Will you be my Valentine? 💖</h1>
+    <p class="subtitle">
+      If love had a shape… it would look like you ✨
+    </p>
+
+    <div class="buttons">
+      <button class="yes" onclick="acceptLove()">YES 💝</button>
+      <button class="no" id="noBtn">No</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS PAGE -->
+  <div class="success" id="success">
+    <h2>You Said YES! 💕</h2>
+    <p id="loveText"></p>
+
+    <!-- SAME VIDEO, NEW PAGE -->
+    <video controls autoplay loop>
+      <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <script>
+    const noBtn = document.getElementById("noBtn");
+    const card = document.getElementById("card");
+    const success = document.getElementById("success");
+    const loveText = document.getElementById("loveText");
+
+    function moveNo() {
+      noBtn.style.position = "fixed";
+      noBtn.style.left = Math.random() * (window.innerWidth - 120) + "px";
+      noBtn.style.top = Math.random() * (window.innerHeight - 60) + "px";
+    }
+
+    noBtn.addEventListener("mouseenter", moveNo);
+    noBtn.addEventListener("touchstart", moveNo);
+
+    function acceptLove() {
+      card.style.display = "none";
+      success.style.display = "block";
+
+      const message =
+        "You didn’t just say YES… 💖\n\n" +
+        "You chose laughter, warmth, late-night talks, " +
+        "and a love that grows stronger every single day.\n\n" +
+        "This Valentine’s Day — and every day after — my heart is yours ❤️";
+
+      let i = 0;
+      loveText.innerHTML = "";
+      const typing = setInterval(() => {
+        loveText.innerHTML += message[i] === "\n" ? "<br>" : message[i];
+        i++;
+        if (i >= message.length) clearInterval(typing);
+      }, 40);
+    }
+  </script>
+
+</body>
+</html>
